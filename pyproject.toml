@@ -11,6 +11,7 @@ requests = "^2.32.3"
 pydantic = "^2.10.4"
 sqlalchemy = "^2.0.36"
 psycopg2-binary = "^2.9.10"
+loguru = "^0.7.3"
 
 
 [tool.poetry.group.dev.dependencies]
@@ -23,8 +24,36 @@ build-backend = "poetry.core.masonry.api"
 
 
 [tool.ruff]
-line-length = 120
 target-version = "py312"
-exclude = ["migrations", ".venv"]
+line-length = 120
+exclude = [
+    ".bzr",
+    ".direnv",
+    ".eggs",
+    ".git",
+    ".git-rewrite",
+    ".hg",
+    ".mypy_cache",
+    ".nox",
+    ".pants.d",
+    ".pytype",
+    ".ruff_cache",
+    ".svn",
+    ".tox",
+    ".venv",
+    "__pypackages__",
+    "_build",
+    "buck-out",
+    "build",
+    "dist",
+    "node_modules",
+    "venv",
+]
 indent-width = 4
 fix = true
+
+
+[tool.ruff.lint]
+select = ["E", "W", "C", "F", "N", "D", "I"]
+preview = true
+ignore = ["D100", "D104", "D203", "D213"]
