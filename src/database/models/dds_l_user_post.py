@@ -11,7 +11,7 @@ class LinkUserPost(Base):
     __table_args__ = (
         ForeignKeyConstraint(["hub_user_hash_key"], ["dds.h_user.hub_user_hash_key"]),
         ForeignKeyConstraint(["hub_post_hash_key"], ["dds.h_post.hub_post_hash_key"]),
-        {"schema": "dds"},  # Указываем схему таблицы
+        {"schema": "dds"},
     )
 
     hub_user_hash_key: Mapped[str] = mapped_column(String(255), nullable=False, primary_key=True)

@@ -34,14 +34,15 @@ class StgToDdsLoader:
         :return: сырой список данных о постах
         """
         try:
-            stg_posts = self.session.query(StgPost).all()
+            with self.session as session:
+                stg_posts = session.query(StgPost).all()
 
-            if not stg_posts:
-                logger.error("Нет данных для загрузки из STG")
-                sys.exit(1)
-            return stg_posts
+                if not stg_posts:
+                    self.logger.error("Нет данных для загрузки из STG")
+                    sys.exit(1)
+                return stg_posts
         except Exception as e:
-            logger.error(f"Ошибка при извлечении данных из STG: {e}")
+            self.logger.error(f"Ошибка при извлечении данных из STG: {e}")
             sys.exit(1)
 
     def _validate_and_create(self, pydantic_model, data_dict):
@@ -65,23 +66,25 @@ class StgToDdsLoader:
         :return: хэш для таблицы h_user
         """
         user_hash_key = generate_hash(str(stg_post.user_id))
-        user = self.session.query(HubUser).filter_by(hub_user_hash_key=user_hash_key).first()
 
-        if not user:
-            user_data = {
-                "hub_user_hash_key": user_hash_key,
-                "user_id": stg_post.user_id,
-                "record_source": stg_post.source,
-                "load_date": stg_post.load_time,
-            }
-            validated_user = self._validate_and_create(UserIn, user_data)
-            user = HubUser(**validated_user.model_dump())
-            try:
-                self.session.add(user)
-                self.session.commit()
-            except Exception as e:
-                self.session.rollback()
-                self.logger.error(f"Ошибка при вставке в h_user: {e}")
+        with self.session as session:
+            user = session.query(HubUser).filter_by(hub_user_hash_key=user_hash_key).first()
+
+            if not user:
+                user_data = {
+                    "hub_user_hash_key": user_hash_key,
+                    "user_id": stg_post.user_id,
+                    "record_source": stg_post.source,
+                    "load_date": stg_post.load_time,
+                }
+                validated_user = self._validate_and_create(UserIn, user_data)
+                user = HubUser(**validated_user.model_dump())
+                try:
+                    session.add(user)
+                    session.commit()
+                except Exception as e:
+                    session.rollback()
+                    self.logger.error(f"Ошибка при вставке в h_user: {e}")
 
         return user_hash_key
 
@@ -92,23 +95,25 @@ class StgToDdsLoader:
         :return: хэш для таблицы h_post
         """
         post_hash_key = generate_hash(str(stg_post.id))
-        post = self.session.query(HubPost).filter_by(hub_post_hash_key=post_hash_key).first()
 
-        if not post:
-            post_data = {
-                "hub_post_hash_key": post_hash_key,
-                "post_id": stg_post.id,
-                "record_source": stg_post.source,
-                "load_date": stg_post.load_time,
-            }
-            validated_post = self._validate_and_create(PostIn, post_data)
-            post = HubPost(**validated_post.model_dump())
-            try:
-                self.session.add(post)
-                self.session.commit()
-            except Exception as e:
-                self.session.rollback()
-                self.logger.error(f"Ошибка при вставке в h_post: {e}")
+        with self.session as session:
+            post = session.query(HubPost).filter_by(hub_post_hash_key=post_hash_key).first()
+
+            if not post:
+                post_data = {
+                    "hub_post_hash_key": post_hash_key,
+                    "post_id": stg_post.id,
+                    "record_source": stg_post.source,
+                    "load_date": stg_post.load_time,
+                }
+                validated_post = self._validate_and_create(PostIn, post_data)
+                post = HubPost(**validated_post.model_dump())
+                try:
+                    session.add(post)
+                    session.commit()
+                except Exception as e:
+                    session.rollback()
+                    self.logger.error(f"Ошибка при вставке в h_post: {e}")
 
         return post_hash_key
 
@@ -129,12 +134,13 @@ class StgToDdsLoader:
         validated_link = self._validate_and_create(UserPostLinkIn, link_data)
         link = LinkUserPost(**validated_link.model_dump())
 
-        try:
-            self.session.add(link)
-            self.session.commit()
-        except Exception as e:
-            self.session.rollback()
-            self.logger.error(f"Ошибка при вставке в l_user_post: {e}")
+        with self.session as session:
+            try:
+                session.add(link)
+                session.commit()
+            except Exception as e:
+                session.rollback()
+                self.logger.error(f"Ошибка при вставке в l_user_post: {e}")
 
     def _process_user_satellite(self, user_hash_key, stg_post) -> None:
         """Обрабатывает сателлит для пользователя с дельта-обновлениями.
@@ -156,12 +162,13 @@ class StgToDdsLoader:
             validated_satellite = self._validate_and_create(SatelliteUserIn, user_satellite_data)
             user_satellite = SatelliteUser(**validated_satellite.model_dump())
 
-            try:
-                self.session.add(user_satellite)
-                self.session.commit()
-            except Exception as e:
-                self.session.rollback()
-                self.logger.error(f"Ошибка при вставке в s_user: {e}")
+            with self.session as session:
+                try:
+                    session.add(user_satellite)
+                    session.commit()
+                except Exception as e:
+                    session.rollback()
+                    self.logger.error(f"Ошибка при вставке в s_user: {e}")
 
     def _process_post_satellite(self, post_hash_key, stg_post) -> None:
         """Обрабатывает сателлит для поста с дельта-обновлениями.
@@ -185,12 +192,14 @@ class StgToDdsLoader:
             validated_satellite = self._validate_and_create(SatellitePostIn, post_satellite_data)
             post_satellite = SatellitePost(**validated_satellite.model_dump())
 
-            try:
-                self.session.add(post_satellite)
-                self.session.commit()
-            except Exception as e:
-                self.session.rollback()
-                self.logger.error(f"Ошибка при вставке в s_post: {e}")
+            with self.session as session:
+                try:
+                    session.add(post_satellite)
+                    session.commit()
+                except Exception as e:
+                    session.rollback()
+                    self.logger.error(f"Ошибка при вставке в s_post: {e}")
+
 
     def _load_data_to_dds(self, stg_posts) -> None:
         """Основной метод для загрузки данных в DDS.
@@ -204,12 +213,13 @@ class StgToDdsLoader:
             self._process_user_satellite(user_hash_key, stg_post)
             self._process_post_satellite(post_hash_key, stg_post)
 
-        try:
-            self.session.commit()
-            self.logger.info("Данные успешно загружены в слой DDS.")
-        except Exception as e:
-            self.session.rollback()
-            self.logger.error(f"Ошибка при загрузке данных в слой DDS: {e}")
+        with self.session as session:
+            try:
+                session.commit()
+                self.logger.info("Данные успешно загружены в слой DDS.")
+            except Exception as e:
+                session.rollback()
+                self.logger.error(f"Ошибка при загрузке данных в слой DDS: {e}")
 
     def run(self):
         """Запускает скрипт для загрузки данных из STG в слой DDS.

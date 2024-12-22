@@ -10,7 +10,7 @@ class SatellitePost(Base):
     __tablename__ = "s_post"
     __table_args__ = (
         ForeignKeyConstraint(["hub_post_hash_key"], ["dds.h_post.hub_post_hash_key"]),
-        {"schema": "dds"},  # Указываем схему таблицы
+        {"schema": "dds"},
     )
 
     hub_post_hash_key: Mapped[str] = mapped_column(String(255), nullable=False, primary_key=True)

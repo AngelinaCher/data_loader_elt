@@ -61,7 +61,7 @@ class ApiExtractor:
         :param stg_post: провалидированные данные поста
         :return:
         """
-        stg_post_data = stg_post.model_dump(by_alias=True)  # Получаем словарь с учетом alias
+        stg_post_data = stg_post.model_dump(by_alias=True)
 
         return StgPost(
             user_id=stg_post_data["userId"],
@@ -89,25 +89,42 @@ class ApiExtractor:
             self.logger.error(f"Ошибка при сохранении данных в STG: {e}")
             sys.exit(1)
 
-    def _load_data_to_stg(self, posts: list[dict]) -> None:
-        """Загружает данные в слой STG без трансформации.
+    def _process_posts(self, posts: list[dict], session: Session):
+        """Обрабатывает и загружает данные постов в слой STG.
 
-        :param posts: полученные посты из API
+        :param posts: список постов, полученных из API
+        :param session: сессия для работы с базой данных
         :return:
         """
-        if not posts:
-            self.logger.error("Отсутствуют данные для добавления")
-            sys.exit(1)
-
         for post_data in posts:
             stg_post = self._validate_post_data(post_data)
             if stg_post:
                 stg_post_model = self._create_stg_post_model(stg_post)
                 try:
-                    self._add_to_session(stg_post_model)
+                    session.add(stg_post_model)
                 except Exception as ex:
                     self.logger.error(f"Ошибка при добавлении данных в сессию: {ex}")
-        self._commit_to_db()
+
+        session.commit()
+        self.logger.info("Записи успешно загружены в слой STG.")
+
+    def _load_data_to_stg(self, posts: list[dict]) -> None:
+        """Загружает данные в слой STG без трансформации.
+
+        В случае ошибки, скрипт завершает работу программы.
+
+        :param posts: полученные посты из API
+        """
+        if not posts:
+            self.logger.error("Отсутствуют данные для добавления")
+            sys.exit(1)
+
+        try:
+            with self.session as session:
+                self._process_posts(posts, session)
+        except Exception as ex:
+            self.logger.error(f"Ошибка при сохранении данных в STG: {ex}")
+            sys.exit(1)
 
     def run(self):
         """Запускает скрипт для загрузки данных из API в слой STG."""
