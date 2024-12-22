@@ -17,9 +17,9 @@ class LoggerConfig:
         :param level: Уровень логирования (по умолчанию INFO).
         """
         logger.remove()
-        self.logger = logger.bind(name=log_name)
         self.log_dir = self.LOGS_DIR
         self.log_dir.mkdir(exist_ok=True)
+        self.logger = logger.bind(name=log_name)
 
         # Настройка вывода в файл
         self.logger.add(
@@ -42,7 +42,3 @@ class LoggerConfig:
     def get_logger(self) -> logger:
         """Возвращает настроенный логгер."""
         return self.logger
-
-
-db_logger_config = LoggerConfig(log_name="db_logger", file_name="database.log", level="INFO")
-db_logger = db_logger_config.get_logger()

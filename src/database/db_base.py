@@ -1,8 +1,3 @@
-from sqlalchemy import MetaData
-from sqlalchemy.orm import DeclarativeBase
+from sqlalchemy.orm import declarative_base
 
-
-class Base(DeclarativeBase):
-    """Базовый класс для всех моделей SQLAlchemy."""
-
-    metadata = MetaData
+Base = declarative_base()
