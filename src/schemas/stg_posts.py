@@ -13,4 +13,4 @@ class StgPostIn(BaseModel):
 class Config:
     """Конфигурация модели Pydantic для работы с SQLAlchemy с таблицей `stg.posts`."""
 
-    orm_mode = True
+    from_attributes = True

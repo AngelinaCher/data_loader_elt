@@ -2,6 +2,7 @@ import json
 import sys
 
 import requests
+from loguru import logger
 
 from src.config import LoggerConfig
 from src.database import Session
@@ -20,11 +21,12 @@ class ApiExtractor:
         self.logger = self._init_logger()
 
     @staticmethod
-    def _init_logger():
+    def _init_logger() -> logger:
+        """Инициализация логгера."""
         logger_config = LoggerConfig(log_name="elt_logger", file_name="elt.log", level="INFO")
-        logger = logger_config.get_logger()
+        elt_logger = logger_config.get_logger()
 
-        return logger
+        return elt_logger
 
     def _fetch_data_from_api(self) -> json:
         """Получает данные из API.
@@ -81,7 +83,7 @@ class ApiExtractor:
         """Коммит данных в базу."""
         try:
             self.session.commit()
-            self.logger.info("Успешно загружено записей в STG.")
+            self.logger.info("Записи успешно загружены в слой STG.")
         except Exception as e:
             self.session.rollback()
             self.logger.error(f"Ошибка при сохранении данных в STG: {e}")

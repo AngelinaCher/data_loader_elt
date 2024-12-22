@@ -5,15 +5,15 @@ from src.database import Base
 
 
 class StgPost(Base):
-    """Модель таблицы posts схемы stg."""
+    """Модель для таблицы сырых данных постов."""
 
     __tablename__ = "posts"
     __table_args__ = {"schema": "stg"}
 
     stg_id: Mapped[BigInteger] = mapped_column(BigInteger, primary_key=True, autoincrement=True)
     user_id: Mapped[int] = mapped_column(
+        "userId",
         Integer,
-        __name_pos="userId",
         nullable=False,
     )
     id: Mapped[int] = mapped_column(Integer, nullable=False)

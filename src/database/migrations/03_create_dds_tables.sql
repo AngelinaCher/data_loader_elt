@@ -37,7 +37,7 @@ CREATE TABLE IF NOT EXISTS dds.s_user (
 -- Сателлит для поста
 CREATE TABLE IF NOT EXISTS dds.s_post (
     hub_post_hash_key VARCHAR(255),
-    user_id BIGINT NOT NULL,
+    post_id BIGINT NOT NULL,
     title TEXT NOT NULL,
     body TEXT NOT NULL,
     record_source TEXT NOT NULL,
