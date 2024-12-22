@@ -7,7 +7,7 @@ class StgPostIn(BaseModel):
     user_id: int = Field(..., alias="userId")
     id: int
     title: str
-    body: str = None
+    body: str
 
 
 class Config:

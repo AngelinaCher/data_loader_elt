@@ -4,7 +4,7 @@ CREATE TABLE IF NOT EXISTS stg.posts (
     "userId" INT NOT NULL,
     "id" INT NOT NULL,
     "title" TEXT NOT NULL,
-    "body" TEXT,
+    "body" TEXT NOT NULL,
     "source" TEXT NOT NULL,
-    "load_time" TIMESTAMP DEFAULT NOW()
+    "load_time" TIMESTAMP DEFAULT NOW() NOT NULL
 );

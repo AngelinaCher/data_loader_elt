@@ -18,6 +18,6 @@ class StgPost(Base):
     )
     id: Mapped[int] = mapped_column(Integer, nullable=False)
     title: Mapped[str] = mapped_column(Text, nullable=False)
-    body: Mapped[str] = mapped_column(Text)
+    body: Mapped[str] = mapped_column(Text, nullable=False)
     source: Mapped[str] = mapped_column(String, nullable=False)
-    load_time: Mapped[TIMESTAMP] = mapped_column(TIMESTAMP, default=func.now())
+    load_time: Mapped[TIMESTAMP] = mapped_column(TIMESTAMP, default=func.now(), nullable=False)
