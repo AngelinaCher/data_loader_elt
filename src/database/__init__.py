@@ -1,3 +1,4 @@
-from .connections import Session as Session
+from .connections import Session
+from .db_base import Base
 
-__all__ = [Session]
+__all__ = [Session, Base]
